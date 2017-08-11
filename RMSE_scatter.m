@@ -1,15 +1,17 @@
 %calculates the RMSE for each plot inside of a user's folder and returns
 %the array of RMSE values and the average RMSE for the random field and
 %gaussian scenarios
-function [user_rmse, rand_avg, gaus_avg] = RMSE_scatter(user_name, my_file_path, data_file_path)
+function [user_rmse, rand_avg, gaus_avg] = RMSE_scatter(user_name, interpolation_method, my_file_path, data_file_path)
     rand_sum = 0; gaus_sum = 0;
 
     %set default file paths so the latter two input arguments are not necessary
     if ~exist('my_file_path','var')
-         my_file_path = '/home/sara/human_auv_pp_userfiles';
+         %my_file_path = '/home/sara/human_auv_pp_userfiles';
+         my_file_path = '/home/resl/human_auv_pp_userfiles';
     end
     if ~exist('data_file_path','var')
-         data_file_path = '/home/sara/Notebook_Script/Data_Scenarios';
+         %data_file_path = '/home/sara/Notebook_Script/Data_Scenarios';
+         data_file_path = '/home/resl/human_auv_pp_scenarios';
     end
 
     %create a zero array to hold the user's RMSE values
@@ -25,7 +27,7 @@ function [user_rmse, rand_avg, gaus_avg] = RMSE_scatter(user_name, my_file_path,
             user_name, '/',user_name, '_path_',num2str(index), '.csv'];
 
         %set the values in the user rmse array
-        user_rmse(index) = plot_gaussian(field_file,user_file, false,false);
+        user_rmse(index) = plot_gaussian(field_file,user_file, false,false,interpolation_method);
 
         %add the RMSEs of the first six plots (random fields) and the second
         %six plots (gaussian fields) separately

@@ -1,6 +1,6 @@
 %uses data from the user file to interpolate a full field, then finds the
 %RMSE of the two sets of data values
-function [RMSE] = plot_gaussian (field_file, user_file, auv, plot_on)
+function [RMSE] = plot_gaussian (field_file, user_file, auv, plot_on, interpolation_method)
 %get the values for the full field
 all_vals = csvread (field_file,3,0); 
 
@@ -31,6 +31,10 @@ if auv == true
         user_y(index) = user_vals(val,3);
         index = index + 1;
     end
+    
+    user_x = user_x';
+    user_y = user_y';
+    
 else
     user_vals = csvread (user_file,1,0);
 
@@ -45,29 +49,28 @@ x_vals = all_vals (:,1);
 y_vals = all_vals (:,2);
 c_vals = all_vals (:,3);
 
-%interpolate the full grid from the user data
-full_c = griddata(user_x, user_y, user_c, x_vals, y_vals, 'v4');
+
+if strcmp(interpolation_method,'gp') == 1
+    %run /home/sara/gpml-matlab-v4.0-2016-10-19/startup.m
+    run /home/resl/gpml-matlab-v4.0-2016-10-19/startup.m
+    x = [user_x,user_y];               
+    y = user_c; 
+    xs = [x_vals,y_vals];
+    meanfunc = [];                    % empty: don't use a mean function
+    covfunc = @covSEiso;              % Squared Exponental covariance function
+    likfunc = @likGauss; 
+    hyp = struct('mean', [], 'cov', [-7.5, 1.5], 'lik', -1);
+    hyp2 = minimize(hyp, @gp, -500, @infGaussLik, meanfunc, covfunc, likfunc, x, y)
+    [mu s2] = gp(hyp2, @infGaussLik, meanfunc, covfunc, likfunc, x, y, xs);
+    full_c = mu;
+else
+    %interpolate the full grid from the user data
+    full_c = griddata(user_x, user_y, user_c, x_vals, y_vals, 'v4');
+end
 
 %find the min and max values for the colorbar
 min_val = min(min(c_vals),min(full_c));
 max_val = max(max(c_vals),max(full_c));
-
-run /home/sara/gpml-matlab-v4.0-2016-10-19/startup.m
-x = [user_x,user_y];               
-y = user_c; 
-xs = [x_vals,y_vals];
-meanfunc = [];                    % empty: don't use a mean function
-covfunc = @covSEiso;              % Squared Exponental covariance function
-likfunc = @likGauss; 
-hyp = struct('mean', [], 'cov', [0 0], 'lik', -1);
-hyp2 = minimize(hyp, @gp, -100, @infGaussLik, meanfunc, covfunc, likfunc, x, y)
-[mu s2] = gp(hyp2, @infGaussLik, meanfunc, covfunc, likfunc, x, y, xs);
-scatter(x_vals,y_vals,50,mu, 'filled')
-colorbar
-% caxis([min_val, max_val])
-
-
-
 
 %remove all NaN values so that the RMSE can be calculated
 full_c_ok = full_c(~isnan(full_c));
@@ -80,7 +83,6 @@ RMSE = sqrt(square_error)/length(c_vals_ok);
 %plot the data
 if plot_on == true
     %plot the field data
-    figure
     scatter(x_vals,y_vals,50,c_vals,'filled')
     colorbar
     caxis([min_val, max_val])
