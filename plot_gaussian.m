@@ -13,8 +13,12 @@ if auv == true
     %get only the unique data values and their indexes
     [c,ia] = unique(user_vals(:,1),'stable');
     
-    %calculate e^c because the files are in log format
-    user_c = exp(c);
+    if max(c) < 10
+        %calculate e^c because the files are in log format
+        user_c = exp(c);
+    else
+        user_c = c;
+    end
     
     %initialize the x and y arrays and the index counter 
     user_x = zeros(1,length(user_c));
@@ -47,6 +51,23 @@ full_c = griddata(user_x, user_y, user_c, x_vals, y_vals, 'v4');
 %find the min and max values for the colorbar
 min_val = min(min(c_vals),min(full_c));
 max_val = max(max(c_vals),max(full_c));
+
+run /home/sara/gpml-matlab-v4.0-2016-10-19/startup.m
+x = [user_x,user_y];               
+y = user_c; 
+xs = [x_vals,y_vals];
+meanfunc = [];                    % empty: don't use a mean function
+covfunc = @covSEiso;              % Squared Exponental covariance function
+likfunc = @likGauss; 
+hyp = struct('mean', [], 'cov', [0 0], 'lik', -1);
+hyp2 = minimize(hyp, @gp, -100, @infGaussLik, meanfunc, covfunc, likfunc, x, y)
+[mu s2] = gp(hyp2, @infGaussLik, meanfunc, covfunc, likfunc, x, y, xs);
+scatter(x_vals,y_vals,50,mu, 'filled')
+colorbar
+% caxis([min_val, max_val])
+
+
+
 
 %remove all NaN values so that the RMSE can be calculated
 full_c_ok = full_c(~isnan(full_c));
