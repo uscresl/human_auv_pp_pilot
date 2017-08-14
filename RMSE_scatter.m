@@ -13,10 +13,10 @@ function [user_rmse, rand_avg, gaus_avg] = RMSE_scatter(user_name, interpolation
 sum_rand = 0; sum_gaus = 0;
 
 %set default file paths so the latter two input arguments are not necessary
-if ~exist('my_file_path','var')
+if ~exist('user_files_path','var')
   user_files_path = '/home/sara/human_auv_pp_userfiles';
 end
-if ~exist('data_file_path','var')
+if ~exist('scenarios_file_path','var')
   scenarios_file_path = '/home/sara/Notebook_Script/Data_Scenarios';
 end
 if ~exist('gpml_location','var')
