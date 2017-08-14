@@ -6,9 +6,12 @@
 % Institution: USC
 % Date: August 2017
 %
-function [RMSE] = plot_gaussian (field_file, user_file, auv, plot_on, interpolation_method)
+function [RMSE] = plot_gaussian (field_file, user_file, auv, plot_on, interpolation_method, gpml_location)
+
 %get the values for the full field
 all_vals = csvread (field_file,3,0);
+
+disp(['Evaluating: ' user_file]);
 
 %import data differently if the user file is an auv file
 if auv == true
@@ -57,8 +60,8 @@ c_vals = all_vals (:,3);
 
 
 if strcmp(interpolation_method,'gp') == 1
-  %run /home/sara/gpml-matlab-v4.0-2016-10-19/startup.m
-  run /home/resl/gpml-matlab-v4.0-2016-10-19/startup.m
+  gpml_startup = [gpml_location 'startup.m'];
+  run(gpml_startup)
   x = [user_x,user_y];
   y = user_c;
   xs = [x_vals,y_vals];
@@ -66,8 +69,9 @@ if strcmp(interpolation_method,'gp') == 1
   covfunc = @covSEiso;              % Squared Exponental covariance function
   likfunc = @likGauss;
   hyp = struct('mean', [], 'cov', [-7.5, 1.5], 'lik', -1);
-  hyp2 = minimize(hyp, @gp, -500, @infGaussLik, meanfunc, covfunc, likfunc, x, y)
-  [mu s2] = gp(hyp2, @infGaussLik, meanfunc, covfunc, likfunc, x, y, xs);
+  hyp2 = minimize(hyp, @gp, -500, @infGaussLik, meanfunc, covfunc, likfunc, x, y);
+  disp(['Hyperparameters: ' num2str(hyp2.cov(1)) ' ' num2str(hyp2.cov(2))])
+  [mu, s2] = gp(hyp2, @infGaussLik, meanfunc, covfunc, likfunc, x, y, xs);
   full_c = mu;
 else
   %interpolate the full grid from the user data

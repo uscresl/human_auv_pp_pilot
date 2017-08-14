@@ -1,4 +1,4 @@
-% function [avg_arr] = interpolate_gaussian (fl_path)
+% function [avg_arr] = interpolate_gaussian (auv_files_path, user_files_path, gpml_location, scenarios_file_path)
 % calculates the average RMSEs for each plot for the AUV and human trials,
 % and returns an array of the overall average RMSEs
 %
@@ -6,24 +6,26 @@
 % Institution: USC
 % Date: August 2017
 %
-function [avg_arr] = interpolate_gaussian (fl_path)
-%paths: '/home/sara/human_auv_pp_auvfiles/auv_adp_field_' (log gp)
-%'/home/sara/human_auv_pp_auvgpfiles/gp_adp_field_' (gp)
+function [avg_arr] = interpolate_gaussian (auv_files_path, user_files_path, gpml_location, scenarios_file_path)
 
 if nargin < 1
-  fl_path = uigetdir;
+  auv_files_path = uigetdir;
 end
-if ( fl_path == 0 )
+if ( auv_files_path == 0 )
   error('Need a path for auv files');
 end
 
 %get the gaussian process auv and human averages
-[auv_avg_g,auv_vals_g] = plot_full_auv_human(true,false,'gp',fl_path);
-[human_avg_g,human_vals_g] = plot_full_auv_human(false,false,'gp',fl_path);
+[auv_avg_g,auv_vals_g] = plot_full_auv_human(true, false, 'gp', auv_files_path, ...
+  user_files_path, gpml_location, scenarios_file_path);
+[human_avg_g,human_vals_g] = plot_full_auv_human(false, false, 'gp', auv_files_path, ...
+  user_files_path, gpml_location, scenarios_file_path);
 
 %get the v4 auv and human averages
-[auv_avg,auv_vals] = plot_full_auv_human(true,false,'v4',fl_path);
-[human_avg,human_vals] = plot_full_auv_human(false,false,'v4',fl_path);
+[auv_avg,auv_vals] = plot_full_auv_human(true, false, 'v4', auv_files_path, ...
+  user_files_path, gpml_location, scenarios_file_path);
+[human_avg,human_vals] = plot_full_auv_human(false, false, 'v4', auv_files_path, ...
+  user_files_path, gpml_location, scenarios_file_path);
 
 % plot config
 y_limits = [0 0.2];

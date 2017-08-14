@@ -1,4 +1,4 @@
-% function [all_avg, val_arr] = plot_full_auv_human(auv,plot_on,interpolation_method,fl_path,file_path)
+% function [all_avg, val_arr] = plot_full_auv_human(auv, plot_on, interpolation_method, auv_files_path, user_files_path, gpml_location, scenarios_file_path)
 %
 % if auv is true, plots the auv RMSE values for each field, otherwise plots
 % all the human values for each field, and the average human values for each
@@ -9,12 +9,13 @@
 % Institution: USC
 % Date: August 2017
 %
-function [all_avg, val_arr] = plot_full_auv_human(auv,plot_on,interpolation_method,fl_path,file_path)
+function [all_avg, val_arr] = plot_full_auv_human(auv, plot_on, interpolation_method, auv_files_path, user_files_path, gpml_location, scenarios_file_path)
 
 if auv == true %looping through AUV paths
   %set the average values to the output of the RMSE scatter auv
   %function
-  [val_arr, r_avg, g_avg] = RMSE_scatter_auv(fl_path,interpolation_method);
+  [val_arr, r_avg, g_avg] = RMSE_scatter_auv(auv_files_path, ...
+    interpolation_method, scenarios_file_path, gpml_location);
   
   %compute the average AUV RMSE
   all_avg = (r_avg + g_avg)/2;
@@ -34,13 +35,13 @@ if auv == true %looping through AUV paths
   end
 else
   %set the default file path
-  if ~exist('file_path','var')
+  if ~exist('user_files_path','var')
     %file_path = '/home/sara/human_auv_pp_userfiles';
-    file_path = '/home/resl/human_auv_pp_userfiles';
+    user_files_path = '/home/resl/human_auv_pp_userfiles';
   end
   
   %create an array of each folder in the directory
-  files = dir (file_path);
+  files = dir (user_files_path);
   
   %initialize zero arrays so the sum of the RMSEs for each plot and the
   %average RMSE for each person can be calculated in the for loop
@@ -63,7 +64,8 @@ else
     %check that the file is a directory and not a hidden directory
     if file.isdir == true && ~strcmpi(file.name,'.') && ~strcmpi(file.name,'..')
       %see RMSE_scatter function below
-      [RMSE,r_avg,g_avg] = RMSE_scatter(file.name,interpolation_method);
+      [RMSE,r_avg,g_avg] = RMSE_scatter(file.name, interpolation_method, ...
+        user_files_path, scenarios_file_path, gpml_location);
       
       %get the highest RMSE value in all the plots so that the y axis
       %bounds are correct
