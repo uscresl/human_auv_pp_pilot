@@ -39,7 +39,7 @@ for field_num = 1:12
   % note that we match with underscore to make sure it matches whole number
   %folder_name = folders(arrayfun(@(x)(endsWith(x.name,['_' num2str(field_num)])), folders)).name;
   % changed for Matlab R2012a:
-  folder_name = folders(arrayfun(@(x)(any(regexp(x.name,['_' num2str(field_num) '$']))), folders)).name
+  folder_name = folders(arrayfun(@(x)(any(regexp(x.name,['_' num2str(field_num) '$']))), folders)).name;
   
   %call plot_gaussian to get the RMSEs
   auv_file_name = [auv_files_path folder_name '/auv_data.log'];

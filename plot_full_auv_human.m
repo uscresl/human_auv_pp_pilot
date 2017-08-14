@@ -36,8 +36,8 @@ if auv == true %looping through AUV paths
 else
   %set the default file path
   if ~exist('user_files_path','var')
-    %file_path = '/home/sara/human_auv_pp_userfiles';
-    user_files_path = '/home/resl/human_auv_pp_userfiles';
+    user_files_path = '/home/sara/human_auv_pp_userfiles';
+    %user_files_path = '/home/resl/human_auv_pp_userfiles';
   end
   
   %create an array of each folder in the directory
@@ -45,18 +45,14 @@ else
   
   %initialize zero arrays so the sum of the RMSEs for each plot and the
   %average RMSE for each person can be calculated in the for loop
-  sum_rmse = zeros (1,12);
   val_arr = zeros(length(files)-2,12);
   user_avg = zeros(1,length(files)-2);
-  
-  %create an x axis for the scatterplots
-  x = linspace (1,12,12);
   
   %initialize variables for the highest RMSE value and loop index
   max_val = 0; user_index = 1;
   
   %create an array of spaces to hold the names of each person
-  %name_arr = repmat(' ', [1 length(files)-2]);
+  name_arr = repmat(" ", [1 length(files)-2]);
   
   %use the RMSE values for each user to plot all the RMSE values and
   %calculate the average RMSE value for each plot
@@ -99,7 +95,7 @@ else
   all_avg = sum(user_avg)/(length(files)-2);
   
   %add a header with names to the average array
-  user_avg = [name_arr; num2cell(user_avg)]
+  user_avg = [name_arr; num2cell(user_avg)];
 end
 
 end
