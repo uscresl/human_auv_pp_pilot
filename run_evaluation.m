@@ -10,11 +10,11 @@ scenarios_file_path = '/home/sara/Notebook_Script/Data_Scenarios';
 auv_files_path = '/home/sara/human_auv_pp_auv_gp_files/'; % gp
 %auv_files_path = '/home/sara/human_auv_pp_auv_random_files/'; % random waypoints
 %auv_files_path = '/home/sara/human_auv_pp_auv_lm_files/'; % lawnmower
-%auv_files_path = '/home/sara/human_auv_pp_auv_gp_files_shorter';
+auv_files_path_short = '/home/sara/human_auv_pp_auv_gp_files_shorter/';
 %auv_files_path = '/home/resl/human_auv_pp_auv_gp_files/';
 
 user_files_path = '/home/sara/human_auv_pp_userfiles';
 %user_files_path = '/home/resl/human_auv_pp_userfiles';
 
-interpolate_gaussian('bdska',auv_files_path, user_files_path, ...
-  gpml_location, scenarios_file_path)
+interpolate_gaussian('best',auv_files_path, user_files_path, ...
+  gpml_location, scenarios_file_path, auv_files_path_short)

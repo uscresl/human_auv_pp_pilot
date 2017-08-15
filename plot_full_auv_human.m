@@ -96,6 +96,7 @@ else
   
   %add a header with names to the average array
   user_avg = [name_arr; num2cell(user_avg)];
+  
+  
 end
-
 end
