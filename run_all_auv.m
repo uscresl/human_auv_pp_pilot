@@ -55,6 +55,7 @@ for file = auv_files_path
     ylabel('RMSE')
     label_arr = {'log gp','gp', 'random waypoints', 'lawnmower'};
     legend(label_arr)
+    grid on
     
     %create a new figure
     figure ('pos', [700 550 600 400]);
@@ -69,6 +70,7 @@ for file = auv_files_path
   auv_avg_gp(index) = auv_avg_g;
   index = index + 1;
 end
+grid on
 index = 1;
 marker = 'o';
 %set options in the plot
@@ -102,6 +104,7 @@ for file = auv_files_path
   %set different markers for lm, short, and other paths
   if index == 4
     %set options in the plot
+    grid on
     ylim([0 0.14]);
     title('AUV RMSE (v4)')
     xlabel('Plot Number')
@@ -138,4 +141,5 @@ label_arr = {'log gp', 'gp', 'random waypoints', 'lawnmower', 'lgp short', ...
   'gp short', 'random short'};
 %label the avg array
 auv_avg_labeled = [label_arr; num2cell(auv_avg_gp); num2cell(auv_avg_v4)];
+grid on
 

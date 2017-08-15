@@ -18,3 +18,4 @@ user_files_path = '/home/sara/human_auv_pp_userfiles';
 
 interpolate_gaussian('best',auv_files_path, user_files_path, ...
   gpml_location, scenarios_file_path, auv_files_path_short)
+grid on
