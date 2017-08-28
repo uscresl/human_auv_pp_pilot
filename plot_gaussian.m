@@ -115,7 +115,8 @@ RMSE = sqrt(square_error)/length(c_vals_ok);
 %plot the data
 if plot_on == true
   %plot the field data
-  scatter(x_vals,y_vals,50,c_vals,'filled')
+  figure
+  scatter(user_x,user_y,50,user_c,'filled')
   colorbar
   caxis([min_val, max_val])
 

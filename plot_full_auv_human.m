@@ -9,7 +9,8 @@
 % Institution: USC
 % Date: August 2017
 %
-function [all_avg, val_arr] = plot_full_auv_human(auv, plot_on, interpolation_method, auv_files_path, user_files_path, gpml_location, scenarios_file_path)
+function [all_avg, val_arr] = plot_full_auv_human(auv, plot_on, interpolation_method, auv_files_path, ...
+  user_files_path, gpml_location, scenarios_file_path, user_plot_on)
 
 if auv == true %looping through AUV paths
   %set the average values to the output of the RMSE scatter auv
@@ -19,6 +20,7 @@ if auv == true %looping through AUV paths
   
   %compute the average AUV RMSE
   all_avg = (r_avg + g_avg)/2;
+  %all_avg = [r_avg, g_avg];
   
   %make the x axis for the scatterplot
   x = linspace (1,12,12);
@@ -48,6 +50,11 @@ else
   val_arr = zeros(length(files)-2,12);
   user_avg = zeros(1,length(files)-2);
   
+  %make the x axis for the scatterplot
+  x = linspace (1,12,12);
+  
+  marker = 'o';
+  
   %initialize variables for the highest RMSE value and loop index
   max_val = 0; user_index = 1;
   
@@ -69,8 +76,32 @@ else
         max_val = max(RMSE);
       end
       
-      %add the RMSE vals to the value array
-      val_arr(user_index,:) = RMSE;
+      if user_plot_on == true
+        scatter(x,RMSE,70,marker,'filled');
+        hold on
+%         if strcmp(marker, 'o') == 1
+%           marker = '^';
+%         elseif strcmp(marker, '^') == 1
+%           marker = '>';
+%         elseif strcmp(marker, '>') == 1
+%           marker = '<';
+%         elseif strcmp(marker, '<') == 1
+%           marker = 'v';
+%         elseif strcmp(marker, 'v') == 1
+%           marker = 's';
+%         elseif strcmp(marker, 's') == 1
+%           marker = 'd';
+%         elseif strcmp(marker, 'd') == 1
+%           marker = 'p';
+%         elseif strcmp(marker, 'p') == 1
+%           marker = 'h';
+%         end
+        val_arr(user_index,1) = r_avg;
+        val_arr(user_index,2) = g_avg;
+      else
+        %add the RMSE vals to the value array
+        val_arr(user_index,:) = RMSE;
+      end
       
       %get the name of the file for the user average array
       name_arr{user_index} = file.name;
@@ -83,12 +114,21 @@ else
     end
   end
   
+  if user_plot_on == true
+    title (['User RMSEs (', interpolation_method, ')'])
+    xlabel('Plot Number')
+    ylabel('RMSE')
+    legend (name_arr)
+    ylim([0,0.14])
+    hold off
+    drawnow
+  end
   if plot_on == true
     %plot the boxplot with each person's RMSE values
     figure('Position',[200,200,900,650])
     boxplot(val_arr)
     title('All RMSEs')
-    ylim([0,max_val+.01])
+    ylim([0,0.14])
   end
   
   %calculate the average for all human users
