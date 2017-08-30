@@ -58,8 +58,8 @@ else
   %initialize variables for the highest RMSE value and loop index
   max_val = 0; user_index = 1;
   
-  %create an array of spaces to hold the names of each person
-  name_arr = repmat(" ", [1 length(files)-2]);
+%   %create an array of spaces to hold the names of each person
+%   name_arr = repmat(' ', [1 length(files)-2]);
   
   %use the RMSE values for each user to plot all the RMSE values and
   %calculate the average RMSE value for each plot
