@@ -1,6 +1,6 @@
 % script for running AUV simulations
 % close all;
-clear all;
+% clear all;
 format long;
 
 % user params
@@ -38,15 +38,17 @@ figure('Position',[60, 10, 1000, 700]);
 hold on;
 
 % we know that we have 12 scenarios, so harcoded here
-for field_id = 1:1, %12, test
+for field_id = 1:12, %test
   % construct filename
   scenario_file = [scenarios_location, 'field_', num2str(field_id), '.csv'];
   disp(['Field: ' scenario_file]);
+  
   % load data, starting at row 3 column 0
   field_all_data = csvread(scenario_file, 3, 0);
   field_lon = field_all_data(:,1);
   field_lat = field_all_data(:,2);
   field_data = field_all_data(:,3);
+  % show the locations
   scatter(field_lon, field_lat, 10, 'o')
   
   % for the GP, take the locations of data for the grid
@@ -162,7 +164,7 @@ for field_id = 1:1, %12, test
               end
               
               rev_pt = [reveal_pt_x reveal_pt_y];
-              if ( path_counter == 1 )csvwrite
+              if ( path_counter == 1 )
                 reveal_points(path_counter,:) = rev_pt;
                 path_counter = path_counter+1;
                 scatter(rev_pt(1), rev_pt(2), 50, 'x', 'LineWidth', 2)
@@ -220,13 +222,34 @@ for field_id = 1:1, %12, test
 %     
   
   %% for all revealed points, get the data from the field file
-
+  min_lon = min(field_lon);
+  min_lat = min(field_lat);
+  max_grid_lon = round((max(field_lon)-min(field_lon))/grid_spacing_lon) + 1;
+  store_points = zeros(size(reveal_points,1),3);
+  for rid = 1:size(reveal_points,1),
+    % calculate longitude and latitude index
+    % rounding because there are small approximation errors in the
+    % locations
+    lon_idx = round((reveal_points(rid,1)-min_lon)/grid_spacing_lon) + 1;
+    lat_idx = round((reveal_points(rid,2)-min_lat)/grid_spacing_lat) + 1;
+    % grab the corresponding data point, and store
+    find_index = (max_grid_lon * (lat_idx-1)) + lon_idx;
+    store_points(rid,:) = field_all_data(find_index,:);
+  end
+  plot(store_points(:,1), store_points(:,2), 'r')
+  
   %% store the revealed points
   filenm = [prepath 'auv_' wpt_selection_method '/field_' num2str(field_id) '.csv'];
   disp(['Storing data to: ' filenm]);
-  dlmwrite(filenm,'Longitude,Latitude,Total Water Column (m)');
-  %%TODO TODO: figure out how to match this with the field data
-  dlmwrite(filenm,1,0,reveal_points);
+  
+  % write header line
+  % dlmwrite(filenm,'Longitude,Latitude,Total Water Column (m)');
+  fid = fopen(filenm, 'w');
+  fprintf(fid, '%s,%s,%s\n', 'Longitude', 'Latitude', 'Total Water Column (m)');  % header
+  fclose(fid);
+  
+  % write data
+  dlmwrite(filenm,store_points,'delimiter',',','precision',20,'-append');
   
 
 
