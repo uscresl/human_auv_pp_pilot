@@ -4,8 +4,10 @@ clear all;
 format long;
 
 % user params
-prepath = '/home/stephanie/data_happ/';
+% prepath = '/home/stephanie/data_happ/';
+prepath = '/mnt/hdd/happ/';
 wpt_selection_method = 'random';
+disp(['Waypoint selection method: ' wpt_selection_method])
 
 % specify all paths
 scenarios_location = strcat(prepath,'scenarios/');
@@ -160,7 +162,7 @@ for field_id = 1:1, %12, test
               end
               
               rev_pt = [reveal_pt_x reveal_pt_y];
-              if ( path_counter == 1 )
+              if ( path_counter == 1 )csvwrite
                 reveal_points(path_counter,:) = rev_pt;
                 path_counter = path_counter+1;
                 scatter(rev_pt(1), rev_pt(2), 50, 'x', 'LineWidth', 2)
@@ -208,13 +210,24 @@ for field_id = 1:1, %12, test
   xlim([min(field_lon) max(field_lon)])
   ylim([min(field_lat) max(field_lat)])
 
-
+  
 %   x_train = wpts_x;
 %   y_train = wpts_y;
 %   
 %   % calculate the hyperparameters
 %   hyp = struct('mean', [], 'cov', [-7.5, 1.5], 'lik', -1);
 %   hyp2 = minimize(hyp, @gp, -500, @infGaussLik, meanfunc, covfunc, likfunc, x, y);
-%   
+%     
+  
+  %% for all revealed points, get the data from the field file
+
+  %% store the revealed points
+  filenm = [prepath 'auv_' wpt_selection_method '/field_' num2str(field_id) '.csv'];
+  disp(['Storing data to: ' filenm]);
+  dlmwrite(filenm,'Longitude,Latitude,Total Water Column (m)');
+  %%TODO TODO: figure out how to match this with the field data
+  dlmwrite(filenm,1,0,reveal_points);
+  
+
 
 end
