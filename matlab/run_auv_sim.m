@@ -1,6 +1,6 @@
 % script for running AUV simulations
 % close all;
-% clear all;
+clear all;
 format long;
 
 % user params
@@ -37,8 +37,20 @@ budget = 190;
 figure('Position',[60, 10, 1000, 700]);
 hold on;
 
+% initialize GP
+if ( strcmp(wpt_selection_method,'gp') == 1 )
+  hyp = struct('mean', [], 'cov', [-7.5, 1.5], 'lik', -1);
+end
+%   x_train = wpts_x;
+%   y_train = wpts_y;
+%   
+%   % calculate the hyperparameters
+%   
+%   hyp2 = minimize(hyp, @gp, -500, @infGaussLik, meanfunc, covfunc, likfunc, x, y);
+
+
 % we know that we have 12 scenarios, so harcoded here
-for field_id = 1:12, %test
+for field_id = 1:1 %2, %test
   % construct filename
   scenario_file = [scenarios_location, 'field_', num2str(field_id), '.csv'];
   disp(['Field: ' scenario_file]);
@@ -50,6 +62,11 @@ for field_id = 1:12, %test
   field_data = field_all_data(:,3);
   % show the locations
   scatter(field_lon, field_lat, 10, 'o')
+  
+  % store field data needed for calculating indices to pull data later.
+  min_lon = min(field_lon);
+  min_lat = min(field_lat);
+  max_grid_lon = round((max(field_lon)-min(field_lon))/grid_spacing_lon) + 1;
   
   % for the GP, take the locations of data for the grid
   % where we make predictions over
@@ -71,11 +88,13 @@ for field_id = 1:12, %test
   wpts_x(1) = min(field_lon);
   wpts_y(1) = max(field_lat);
   path_counter = 1;
-  for wpt_idx = 2:20,
-    if ( path_counter < budget )
+  store_points = zeros(budget,3);
+  for wpt_idx = 2:40,
+    if ( path_counter <= budget)
       % get a new waypoint
       if ( strcmp(wpt_selection_method,'gp') == 1 )
         %TODO add other methods for choosing waypoint
+        
       else
         % random wpts
         rand_lon = field_lon(randi(length(field_lon)));
@@ -117,7 +136,7 @@ for field_id = 1:12, %test
         end
         for reveal_pt_x = last_wpt_x:increment_amount:new_wpt_x
           reveal_pt_y = slope * (reveal_pt_x - min_x) + corresponding_y;
-          if ( path_counter < budget )
+          if ( path_counter <= budget )
             % round calculated y value to grid pt
             y_mod = mod(reveal_pt_y,grid_spacing_lat);
             if ( y_mod > grid_spacing_lat/2 )
@@ -125,14 +144,20 @@ for field_id = 1:12, %test
             else
               rev_pt_y = reveal_pt_y - y_mod;
             end
+            
             rev_pt = [reveal_pt_x rev_pt_y];
+            rev_pt_full = revealPoint(field_all_data, ...
+                  rev_pt(1), rev_pt(2), ...
+                  min_lon, min_lat, grid_spacing_lon, grid_spacing_lat, ...
+                  max_grid_lon);
+            
             if ( path_counter == 1 )
-              reveal_points(path_counter,:) = rev_pt;
+              store_points(path_counter,:) = rev_pt_full;
               path_counter = path_counter+1;
               scatter(rev_pt(1), rev_pt(2), 50, '*', 'LineWidth', 2)            
             else
-              if ( ~ismember(rev_pt, reveal_points, 'rows') )
-                reveal_points(path_counter,:) = rev_pt;
+              if ( ~ismember(rev_pt_full, store_points, 'rows') )
+                store_points(path_counter,:) = rev_pt_full;
                 path_counter = path_counter+1;
                 scatter(rev_pt(1), rev_pt(2), 50, '*', 'LineWidth', 2)
               end
@@ -154,7 +179,7 @@ for field_id = 1:12, %test
 
         if ( new_wpt_x ~= last_wpt_x )  
           for reveal_pt_y = last_wpt_y:increment_amount:new_wpt_y
-            if ( path_counter < budget )
+            if ( path_counter <= budget )
               reveal_pt_x = ((reveal_pt_y - min_y) / slope) + corresponding_x;
               x_mod = mod(reveal_pt_x,grid_spacing_lon);
               if ( x_mod > grid_spacing_lon/2 )
@@ -164,13 +189,18 @@ for field_id = 1:12, %test
               end
               
               rev_pt = [reveal_pt_x reveal_pt_y];
+              rev_pt_full = revealPoint(field_all_data, ...
+                    rev_pt(1), rev_pt(2), ...
+                    min_lon, min_lat, grid_spacing_lon, grid_spacing_lat, ...
+                    max_grid_lon);
+              
               if ( path_counter == 1 )
-                reveal_points(path_counter,:) = rev_pt;
+                store_points(path_counter,:) = rev_pt_full;
                 path_counter = path_counter+1;
                 scatter(rev_pt(1), rev_pt(2), 50, 'x', 'LineWidth', 2)
               else
-                if ( ~ismember(rev_pt, reveal_points, 'rows') )
-                  reveal_points(path_counter,:) = rev_pt;
+                if ( ~ismember(rev_pt_full, store_points, 'rows') )
+                  store_points(path_counter,:) = rev_pt_full;
                   path_counter = path_counter+1;
                   scatter(rev_pt(1), rev_pt(2), 50, 'x', 'LineWidth', 2)
                 end
@@ -183,15 +213,20 @@ for field_id = 1:12, %test
           % delta_x is zero, vertical line
           increment_amount = grid_spacing_lat;
           for reveal_pt_y = min_y:increment_amount:max_y %+increment_amount
-            if ( path_counter < budget )
+            if ( path_counter <= budget )
               reveal_pt_x = new_wpt_x;
               rev_pt = [reveal_pt_x reveal_pt_y];
+              rev_pt_full = revealPoint(field_all_data, ...
+                    rev_pt(1), rev_pt(2), ...
+                    min_lon, min_lat, grid_spacing_lon, grid_spacing_lat, ...
+                    max_grid_lon);
+              
               if ( path_counter == 1 )
-                reveal_points(path_counter,:) = rev_pt;
+                store_points(path_counter,:) = rev_pt_full;
                 scatter(reveal_pt_x, reveal_pt_y, 50, 'o', 'LineWidth', 2);
               else
-                if ( ~ismember(rev_pt, reveal_points, 'rows') )
-                  reveal_points(path_counter,:) = rev_pt;
+                if ( ~ismember(rev_pt_full, store_points, 'rows') )
+                  store_points(path_counter,:) = rev_pt_full;
                   scatter(reveal_pt_x, reveal_pt_y, 50, 'o', 'LineWidth', 2);
                 end
               end
@@ -201,42 +236,22 @@ for field_id = 1:12, %test
           end
         end      
       end
+    else
+      break;
     end
   end
-  disp(['Total path length: ' num2str(path_counter)])
+  disp(['Total path length: ' num2str(path_counter-1)])
   
+  % show the chosen waypoints and path between them
   scatter(wpts_x, wpts_y, 30);
   for idx = 1:length(wpts_x)-1,
     line(wpts_x(idx:idx+1),wpts_y(idx:idx+1),'Color','k')
   end
   xlim([min(field_lon) max(field_lon)])
   ylim([min(field_lat) max(field_lat)])
-
   
-%   x_train = wpts_x;
-%   y_train = wpts_y;
-%   
-%   % calculate the hyperparameters
-%   hyp = struct('mean', [], 'cov', [-7.5, 1.5], 'lik', -1);
-%   hyp2 = minimize(hyp, @gp, -500, @infGaussLik, meanfunc, covfunc, likfunc, x, y);
-%     
-  
-  %% for all revealed points, get the data from the field file
-  min_lon = min(field_lon);
-  min_lat = min(field_lat);
-  max_grid_lon = round((max(field_lon)-min(field_lon))/grid_spacing_lon) + 1;
-  store_points = zeros(size(reveal_points,1),3);
-  for rid = 1:size(reveal_points,1),
-    % calculate longitude and latitude index
-    % rounding because there are small approximation errors in the
-    % locations
-    lon_idx = round((reveal_points(rid,1)-min_lon)/grid_spacing_lon) + 1;
-    lat_idx = round((reveal_points(rid,2)-min_lat)/grid_spacing_lat) + 1;
-    % grab the corresponding data point, and store
-    find_index = (max_grid_lon * (lat_idx-1)) + lon_idx;
-    store_points(rid,:) = field_all_data(find_index,:);
-  end
-  plot(store_points(:,1), store_points(:,2), 'r')
+  % show the stored points
+  scatter(store_points(:,1), store_points(:,2), 100, 'o')
   
   %% store the revealed points
   filenm = [prepath 'auv_' wpt_selection_method '/field_' num2str(field_id) '.csv'];
