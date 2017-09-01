@@ -20,43 +20,44 @@ if exist(full_path, 'file') ~= 2
   disp(['Evaluating: ' user_file]);
 
   %import data differently if the user file is an auv file
-  if auv == true
-    %import data and remove other struct fields
-    user_vals = importdata(user_file, ' ', 13);
-    user_vals = user_vals.data;
-
-    %get only the unique data values and their indexes
-    [c,ia] = unique(user_vals(:,1),'stable');
-
-    if max(c) < 10
-      %calculate e^c because the files are in log format
-      user_c = exp(c);
-    else
-      user_c = c;
-    end
-
-    %initialize the x and y arrays and the index counter
-    user_x = zeros(1,length(user_c));
-    user_y = zeros(1,length(user_c));
-    index = 1;
-
-    %only get the x and y vals that correspond to the data indices
-    for val = ia'
-      user_x(index) = user_vals(val,2);
-      user_y(index) = user_vals(val,3);
-      index = index + 1;
-    end
-
-    user_x = user_x';
-    user_y = user_y';
-
-  else
+%   if auv == true
+%     %import data and remove other struct fields
+% %     user_vals = importdata(user_file, ' ', 13);
+%     user_vals = importdata(user_file, ' ', 2);
+%     user_vals = user_vals.data;
+% 
+%     %get only the unique data values and their indexes
+%     [c,ia] = unique(user_vals(:,1),'stable');
+% 
+%     if max(c) < 10
+%       %calculate e^c because the files are in log format
+%       user_c = exp(c);
+%     else
+%       user_c = c;
+%     end
+% 
+%     %initialize the x and y arrays and the index counter
+%     user_x = zeros(1,length(user_c));
+%     user_y = zeros(1,length(user_c));
+%     index = 1;
+% 
+%     %only get the x and y vals that correspond to the data indices
+%     for val = ia'
+%       user_x(index) = user_vals(val,2);
+%       user_y(index) = user_vals(val,3);
+%       index = index + 1;
+%     end
+% 
+%     user_x = user_x';
+%     user_y = user_y';
+% 
+%   else
     user_vals = csvread (user_file,1,0);
     %separate the x, y, and c vals in the user data
     user_x = user_vals (:,1);
     user_y = user_vals (:,2);
     user_c = user_vals (:,3);
-  end
+%   end
 
   %separate the x, y, and c vals
   x_vals = all_vals (:,1);
