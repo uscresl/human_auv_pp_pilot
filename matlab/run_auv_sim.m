@@ -56,6 +56,7 @@ budget = 190;
 if ( strcmp(wpt_selection_method,'gp') == 1 )
   hyp = struct('mean', [], 'cov', [-7.5, 1.5], 'lik', -1);
 end
+expl_factor = 0.25;
 
 %% run fields
 
@@ -153,7 +154,6 @@ for field_id = 1:12,
           post_entropy = 1/2 * log( 2 * pi * exp(1) * pred_var);
         elseif ( strcmp(inf_metric,'entropy_plus_mean') == 1 )
           post_entropy = 1/2 * log( 2 * pi * exp(1) * pred_var);
-          expl_factor = 0.25;
           post_entropy = (post_entropy/max(post_entropy)) + expl_factor * (pred_mu/max(pred_mu));
         end
         [max_val, max_ind] = max(post_entropy);
