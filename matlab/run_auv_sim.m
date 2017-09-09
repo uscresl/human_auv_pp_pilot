@@ -1,13 +1,29 @@
 % script for running AUV simulations
-% close all;
-clear all;
+
+function [] = run_auv_sim(wpt_selection_method, inf_metric, plot_figs)
+
+% make sure we keep all precision
 format long;
 
-% user params
-% prepath = '/home/stephanie/data_happ/';
-prepath = '/mnt/hdd/happ/';
-wpt_selection_method = 'random';
+%% read function arguments
+if ( exist('wpt_selection_method','var') == 0 ) 
+  wpt_selection_method = 'gp';
+end
+if ( exist('inf_metric','var') == 0 )
+  inf_metric = 'entropy';
+end
+if ( exist('plot_figs','var') == 0 )
+  plot_figs = 0;
+end
+
 disp(['Waypoint selection method: ' wpt_selection_method])
+if ( strcmp(wpt_selection_method,'gp') == 1 )
+  disp(['Information-theoretic metric: ' inf_metric])
+end
+
+%% user params
+prepath = '/home/stephanie/data_happ/';
+% prepath = '/mnt/hdd/happ/';
 
 % specify all paths
 scenarios_location = strcat(prepath,'scenarios/');
@@ -15,6 +31,8 @@ scenarios_location = strcat(prepath,'scenarios/');
 gpml_location = strcat(prepath,'gpml-matlab-v4.0-2016-10-19/');
 gpml_startup_script = strcat(gpml_location, 'startup.m');
 run(gpml_startup_script);
+
+%% prep
 
 % seed the random number generator with current time
 rng(round(mod(datenum(clock),1)*1000000))
@@ -34,23 +52,22 @@ grid_spacing_lat = grid_spacing / lat_deg_to_m;
 
 budget = 190;
 
-figure('Position',[60, 10, 1000, 700]);
-hold on;
-
 % initialize GP
 if ( strcmp(wpt_selection_method,'gp') == 1 )
   hyp = struct('mean', [], 'cov', [-7.5, 1.5], 'lik', -1);
 end
-%   x_train = wpts_x;
-%   y_train = wpts_y;
-%   
-%   % calculate the hyperparameters
-%   
-%   hyp2 = minimize(hyp, @gp, -500, @infGaussLik, meanfunc, covfunc, likfunc, x, y);
 
+%% run fields
 
 % we know that we have 12 scenarios, so harcoded here
-for field_id = 1:1 %2, %test
+for field_id = 1:12,
+
+  if ( plot_figs )
+    fh = figure(field_id);
+    set(fh,'Position',[60, 10, 1000, 700]);
+    hold on;
+  end
+  
   % construct filename
   scenario_file = [scenarios_location, 'field_', num2str(field_id), '.csv'];
   disp(['Field: ' scenario_file]);
@@ -59,9 +76,13 @@ for field_id = 1:1 %2, %test
   field_all_data = csvread(scenario_file, 3, 0);
   field_lon = field_all_data(:,1);
   field_lat = field_all_data(:,2);
-  field_data = field_all_data(:,3);
-  % show the locations
-  scatter(field_lon, field_lat, 10, 'o')
+  % actual data, not used here, because field_all_data is passed on
+  %field_data = field_all_data(:,3);
+  
+  if ( plot_figs )
+    % show the locations
+    scatter(field_lon, field_lat, 10, 'o')
+  end
   
   % store field data needed for calculating indices to pull data later.
   min_lon = min(field_lon);
@@ -77,31 +98,67 @@ for field_id = 1:1 %2, %test
   % re-calculate the hyperparameters as we go
   
   meanfunc = [];        % empty: don't use a mean function
-  covfunc = @covSEiso;  % Squared Exponental covariance function
   likfunc = @likGauss;
-  
-  path_length = 0;
+%   covfunc = @covSEiso;  % Squared Exponental covariance function  
+  % Cov: SE iso and Noise
+  covfunc = {'covSum',{'covSEiso','covNoise'}};
+  % params from sim -- these don't work, it cannot recover from > -10 or so
+  % hyp = struct('mean', [], 'cov', [-12.4292, 0.4055, -1.8971], 'lik', -1);
+  % sim-end-based params
+  hyp = struct('mean', [], 'cov', [-7.5, 0.5, 1.0], 'lik', -1);
+
+  % reset stored data/counters between fields
+  path_counter = 1;
+  store_points = [];
+  wpts_x = [];
+  wpts_y = [];
   
   % do not prealloc wpt_x and wpt_y, because we do not always
   % get the same size, depending on distance betw waypoints
   % and start from top left, given user study design
   wpts_x(1) = min(field_lon);
   wpts_y(1) = max(field_lat);
-  path_counter = 1;
-  store_points = zeros(budget,3);
+  
+%   store_points = zeros(budget,3);
   for wpt_idx = 2:40,
     if ( path_counter <= budget)
       % get a new waypoint
-      if ( strcmp(wpt_selection_method,'gp') == 1 )
-        %TODO add other methods for choosing waypoint
-        
-      else
+      if ( strcmp(wpt_selection_method,'random') == 1 || ...
+           ( strcmp(wpt_selection_method,'gp') == 1 && ...
+             length(wpts_x) == 1 ) )
         % random wpts
         rand_lon = field_lon(randi(length(field_lon)));
         wpts_x(wpt_idx) = rand_lon;
         rand_lat = field_lat(randi(length(field_lat)));
         wpts_y(wpt_idx) = rand_lat;
         disp(['Random wpt: ' num2str(rand_lon) ',' num2str(rand_lat)]);
+      elseif ( strcmp(wpt_selection_method,'gp') == 1 )
+        %TODO add other methods for choosing waypoint
+        % training data is already stored as store_points
+        x_train = store_points(:,1:2);
+        y_train = store_points(:,3);
+        % run HP optimization
+        hyp_fitted = minimize(hyp, @gp, -500, @infGaussLik, meanfunc, ...
+          covfunc, likfunc, x_train, y_train);
+        % make predictions
+        [pred_mu, pred_var] = gp(hyp_fitted, @infGaussLik, meanfunc, ...
+          covfunc, likfunc, x_train, y_train, sample_locations);
+        % debugging
+%         figure(2);
+%         scatter(x_train(:,1), x_train(:,2), 30, y_train, 'filled');
+%         figure(3);
+%         scatter(sample_locations(:,1), sample_locations(:,2), 30, pred_mu, 'filled')
+        % calculate the entropy
+        if ( strcmp(inf_metric,'entropy') == 1 )
+          post_entropy = 1/2 * log( 2 * pi * exp(1) * pred_var);
+        elseif ( strcmp(inf_metric,'entropy_plus_mean') == 1 )
+          post_entropy = 1/2 * log( 2 * pi * exp(1) * pred_var);
+          expl_factor = 0.25;
+          post_entropy = (post_entropy/max(post_entropy)) + expl_factor * (pred_mu/max(pred_mu));
+        end
+        [max_val, max_ind] = max(post_entropy);
+        wpts_x(wpt_idx) = sample_locations(max_ind,1);
+        wpts_y(wpt_idx) = sample_locations(max_ind,2);
       end
       
       new_wpt_x = wpts_x(wpt_idx);
@@ -154,12 +211,16 @@ for field_id = 1:1 %2, %test
             if ( path_counter == 1 )
               store_points(path_counter,:) = rev_pt_full;
               path_counter = path_counter+1;
-              scatter(rev_pt(1), rev_pt(2), 50, '*', 'LineWidth', 2)            
+              if ( plot_figs )
+                scatter(rev_pt(1), rev_pt(2), 50, '*', 'LineWidth', 2)            
+              end
             else
               if ( ~ismember(rev_pt_full, store_points, 'rows') )
                 store_points(path_counter,:) = rev_pt_full;
                 path_counter = path_counter+1;
-                scatter(rev_pt(1), rev_pt(2), 50, '*', 'LineWidth', 2)
+                if ( plot_figs )
+                  scatter(rev_pt(1), rev_pt(2), 50, '*', 'LineWidth', 2)
+                end
               end
             end
           else
@@ -188,7 +249,7 @@ for field_id = 1:1 %2, %test
                 rev_pt_x = reveal_pt_x - x_mod;
               end
               
-              rev_pt = [reveal_pt_x reveal_pt_y];
+              rev_pt = [rev_pt_x reveal_pt_y];
               rev_pt_full = revealPoint(field_all_data, ...
                     rev_pt(1), rev_pt(2), ...
                     min_lon, min_lat, grid_spacing_lon, grid_spacing_lat, ...
@@ -197,12 +258,16 @@ for field_id = 1:1 %2, %test
               if ( path_counter == 1 )
                 store_points(path_counter,:) = rev_pt_full;
                 path_counter = path_counter+1;
-                scatter(rev_pt(1), rev_pt(2), 50, 'x', 'LineWidth', 2)
+                if ( plot_figs )
+                  scatter(rev_pt(1), rev_pt(2), 50, 'x', 'LineWidth', 2)
+                end
               else
                 if ( ~ismember(rev_pt_full, store_points, 'rows') )
                   store_points(path_counter,:) = rev_pt_full;
                   path_counter = path_counter+1;
-                  scatter(rev_pt(1), rev_pt(2), 50, 'x', 'LineWidth', 2)
+                  if ( plot_figs )
+                    scatter(rev_pt(1), rev_pt(2), 50, 'x', 'LineWidth', 2)
+                  end
                 end
               end
             else
@@ -223,11 +288,15 @@ for field_id = 1:1 %2, %test
               
               if ( path_counter == 1 )
                 store_points(path_counter,:) = rev_pt_full;
-                scatter(reveal_pt_x, reveal_pt_y, 50, 'o', 'LineWidth', 2);
+                if ( plot_figs ) 
+                  scatter(reveal_pt_x, reveal_pt_y, 50, 'o', 'LineWidth', 2);
+                end
               else
                 if ( ~ismember(rev_pt_full, store_points, 'rows') )
                   store_points(path_counter,:) = rev_pt_full;
-                  scatter(reveal_pt_x, reveal_pt_y, 50, 'o', 'LineWidth', 2);
+                  if ( plot_figs )
+                    scatter(reveal_pt_x, reveal_pt_y, 50, 'o', 'LineWidth', 2);
+                  end
                 end
               end
             else
@@ -242,19 +311,25 @@ for field_id = 1:1 %2, %test
   end
   disp(['Total path length: ' num2str(path_counter-1)])
   
-  % show the chosen waypoints and path between them
-  scatter(wpts_x, wpts_y, 30);
-  for idx = 1:length(wpts_x)-1,
-    line(wpts_x(idx:idx+1),wpts_y(idx:idx+1),'Color','k')
+  if ( plot_figs )
+    % show the chosen waypoints and path between them
+    scatter(wpts_x, wpts_y, 30);
+    for idx = 1:length(wpts_x)-1,
+      line(wpts_x(idx:idx+1),wpts_y(idx:idx+1),'Color','k')
+    end
+    xlim([min(field_lon) max(field_lon)])
+    ylim([min(field_lat) max(field_lat)])
+
+    % show the stored points
+    scatter(store_points(:,1), store_points(:,2), 100, 'o')  
   end
-  xlim([min(field_lon) max(field_lon)])
-  ylim([min(field_lat) max(field_lat)])
-  
-  % show the stored points
-  scatter(store_points(:,1), store_points(:,2), 100, 'o')
   
   %% store the revealed points
-  filenm = [prepath 'auv_' wpt_selection_method '/field_' num2str(field_id) '.csv'];
+  if ( strcmp(wpt_selection_method,'gp') == 1 )
+    filenm = [prepath 'auv_' wpt_selection_method '_' inf_metric '/field_' num2str(field_id) '.csv'];
+  else
+    filenm = [prepath 'auv_' wpt_selection_method '/field_' num2str(field_id) '.csv'];
+  end
   disp(['Storing data to: ' filenm]);
   
   % write header line
@@ -265,7 +340,6 @@ for field_id = 1:1 %2, %test
   
   % write data
   dlmwrite(filenm,store_points,'delimiter',',','precision',20,'-append');
-  
-
+end
 
 end
