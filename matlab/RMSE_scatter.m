@@ -1,4 +1,6 @@
-% function [user_rmse, rand_avg, gaus_avg] = RMSE_scatter(user_name, interpolation_method, my_file_path, data_file_path)
+% function [user_rmse, rand_avg, gaus_avg] = RMSE_scatter(user_name, ...
+% interpolation_method, my_file_path, data_file_path)
+% 
 % calculates the RMSE for each plot inside of a user's folder and returns
 % the array of RMSE values and the average RMSE for the random field and
 % gaussian scenarios
@@ -7,7 +9,8 @@
 % Institution: USC
 % Date: August 2017
 %
-function [user_rmse, rand_avg, gaus_avg] = RMSE_scatter(user_name, interpolation_method, user_files_path, scenarios_file_path, gpml_location)
+function [user_rmse, rand_avg, gaus_avg] = RMSE_scatter(user_name, ...
+  interpolation_method, user_files_path, scenarios_file_path, gpml_location)
 
 %initialize variables
 sum_rand = 0; sum_gaus = 0;
@@ -28,7 +31,7 @@ run check_paths_trailing_slash;
 %create a zero array to hold the user's RMSE values
 user_rmse = zeros (1,12);
 
-%loop through each file in the folder, and call the plot_gaussian function
+%loop through each file in the folder, and call the calc_RMSE function
 %to get the RMSE values
 for index = 1:12
   %get the file names for the full field and user path files
@@ -37,7 +40,7 @@ for index = 1:12
     num2str(index), '.csv'];
   
   %set the values in the user rmse array
-  user_rmse(index) = plot_gaussian(field_file, user_file, false, false, ...
+  user_rmse(index) = calc_RMSE(field_file, user_file, false, false, ...
     interpolation_method, gpml_location);
   
   %add the RMSEs of the first six plots (random fields) and the second

@@ -41,12 +41,12 @@ for field_num = 1:12
   % changed for Matlab R2012a:
 %   folder_name = folders(arrayfun(@(x)(any(regexp(x.name,['_' num2str(field_num) '$']))), folders)).name;
   
-  %call plot_gaussian to get the RMSEs
+  %call calcRMSE to get the RMSEs
 %   auv_file_name = [auv_files_path folder_name '/auv_data.log'];
   auv_file_name = [auv_files_path, 'field_', num2str(field_num), '.csv'];
   data_file_name = [scenarios_file_path, 'field_', num2str(field_num), '.csv'];
   
-  auv_rmse(field_num) = plot_gaussian(data_file_name, auv_file_name, ...
+  auv_rmse(field_num) = calc_RMSE(data_file_name, auv_file_name, ...
     true, false, interpolation_method, gpml_location);
   
   %calculate separate sums for the random fields and gaussian scenarios

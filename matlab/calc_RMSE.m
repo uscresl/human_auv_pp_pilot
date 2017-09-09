@@ -6,7 +6,7 @@
 % Institution: USC
 % Date: August 2017
 %
-function [RMSE] = plot_gaussian (field_file, user_file, auv, plot_on, interpolation_method, gpml_location)
+function [RMSE] = calc_RMSE (field_file, user_file, auv, plot_on, interpolation_method, gpml_location)
 
 %set the name that the variables will be saved under
 [pathstr,name,~] = fileparts(user_file);
@@ -19,50 +19,16 @@ if exist(full_path, 'file') ~= 2
 
   disp(['Evaluating: ' user_file]);
 
-  %import data differently if the user file is an auv file
-%   if auv == true
-%     %import data and remove other struct fields
-% %     user_vals = importdata(user_file, ' ', 13);
-%     user_vals = importdata(user_file, ' ', 2);
-%     user_vals = user_vals.data;
-% 
-%     %get only the unique data values and their indexes
-%     [c,ia] = unique(user_vals(:,1),'stable');
-% 
-%     if max(c) < 10
-%       %calculate e^c because the files are in log format
-%       user_c = exp(c);
-%     else
-%       user_c = c;
-%     end
-% 
-%     %initialize the x and y arrays and the index counter
-%     user_x = zeros(1,length(user_c));
-%     user_y = zeros(1,length(user_c));
-%     index = 1;
-% 
-%     %only get the x and y vals that correspond to the data indices
-%     for val = ia'
-%       user_x(index) = user_vals(val,2);
-%       user_y(index) = user_vals(val,3);
-%       index = index + 1;
-%     end
-% 
-%     user_x = user_x';
-%     user_y = user_y';
-% 
-%   else
-    user_vals = csvread (user_file,1,0);
-    %separate the x, y, and c vals in the user data
-    user_x = user_vals (:,1);
-    user_y = user_vals (:,2);
-    user_c = user_vals (:,3);
-%   end
+  user_vals = csvread (user_file,1,0);
+  %separate the x, y, and c vals in the user data
+  user_x = user_vals (:,1);
+  user_y = user_vals (:,2);
+  user_c = user_vals (:,3);
 
-  %separate the x, y, and c vals
-  x_vals = all_vals (:,1);
-  y_vals = all_vals (:,2);
-  c_vals = all_vals (:,3);
+  %separate the x, y, and c vals for the field data
+  field_x = all_vals (:,1);
+  field_y = all_vals (:,2);
+  field_c = all_vals (:,3);
 
   %gaussian interpolation using the downloaded gp library
   if strcmp(interpolation_method,'gp') == 1
@@ -74,7 +40,7 @@ if exist(full_path, 'file') ~= 2
     %set variables
     x = [user_x,user_y];
     y = user_c;
-    xs = [x_vals,y_vals];
+    xs = [field_x,field_y];
     meanfunc = [];                    % empty: don't use a mean function
     covfunc = @covSEiso;              % Squared Exponental covariance function
     likfunc = @likGauss;
@@ -85,14 +51,15 @@ if exist(full_path, 'file') ~= 2
     
     %interpolate the full field
     [mu, ~] = gp(hyp2, @infGaussLik, meanfunc, covfunc, likfunc, x, y, xs);
-    full_c = mu;
+    user_interp_c = mu;
     
   else
     %interpolate the full grid from the user data
-    full_c = griddata(user_x, user_y, user_c, x_vals, y_vals, 'v4');
+    user_interp_c = griddata(user_x, user_y, user_c, field_x, field_y, 'v4');
   end
+  
   %save the variables to file
-  save(full_path,'user_x','user_y','full_c','c_vals');
+  save(full_path,'user_x','user_y','user_interp_c','field_c');
 else
   %load the variables from file
   load(full_path);
@@ -102,29 +69,30 @@ end
 %num_points = [pathstr, ': ', num2str(length(user_x))]
 
 %find the min and max values for the colorbar
-min_val = min(min(c_vals),min(full_c));
-max_val = max(max(c_vals),max(full_c));
+min_val = min(min(field_c),min(user_interp_c));
+max_val = max(max(field_c),max(user_interp_c));
 
 %remove all NaN values so that the RMSE can be calculated
-full_c_ok = full_c(~isnan(full_c));
-c_vals_ok = c_vals(~isnan(full_c));
+full_c_ok = user_interp_c(~isnan(user_interp_c));
+field_vals_ok = field_c(~isnan(user_interp_c));
 
 %calculate RMSE
-square_error = sum((full_c_ok-c_vals_ok).^2);
-RMSE = sqrt(square_error)/length(c_vals_ok);
+square_error = sum((full_c_ok-field_vals_ok).^2);
+RMSE = sqrt(square_error)/length(field_vals_ok);
 
 %plot the data
 if plot_on == true
-  %plot the field data
+  %plot the user data
   figure
   scatter(user_x,user_y,50,user_c,'filled')
   colorbar
   caxis([min_val, max_val])
 
-  %plot the user data
+  %plot the user interpolated data
   figure
-  scatter(x_vals,y_vals,50,full_c,'filled')
+  scatter(field_x,field_y,50,user_interp_c,'filled')
   colorbar
   caxis([min_val, max_val])
 end
+
 end
