@@ -1,9 +1,10 @@
-% function [avg_arr] = interpolate_gaussian (plots, auv_files_path, user_files_path, gpml_location, scenarios_file_path)
+% function [avg_arr] = interpolate_gaussian (plots, auv_files_path, ...
+%   user_files_path, gpml_location, scenarios_file_path)
+%
 % if plots is 'all', plots a figure with boxplots of the v4 and gp RMSEs
 % for the human trials, and a figure with scatterplots of the v4 and gp
 % RMSEs for the given auv trial; otherwise plots the human(boxplot) and 
 % AUV(scatter) gp RMSEs in the same figure
-%
 %
 % Author: Sara Kangaslahti
 % Institution: USC
@@ -30,25 +31,25 @@ end
 if strcmp(plots, 'all') == 1
   if plot_human == false
     %get the v4 auv and human averages
-    [auv_avg,auv_vals] = plot_full_auv_human(true, false, int_mthd2, auv_files_path, ...
-      user_files_path, gpml_location, scenarios_file_path,plot_human);
+    [auv_avg,auv_vals] = plot_full_auv_human(true, false, int_mthd2, ...
+      auv_files_path, gpml_location, scenarios_file_path,plot_human);
   end
-  [human_avg,human_vals] = plot_full_auv_human(false, false, int_mthd2, auv_files_path, ...
+  [human_avg,human_vals] = plot_full_auv_human(false, false, int_mthd2, ...
     user_files_path, gpml_location, scenarios_file_path,plot_human);
 end
 %get the gaussian process auv and human averages
 if (plot_human == false)
   [auv_avg_g,auv_vals_g] = plot_full_auv_human(true, false, int_mthd1, auv_files_path, ...
-    user_files_path, gpml_location, scenarios_file_path,plot_human);
+    gpml_location, scenarios_file_path,plot_human);
   [auv_avg_short, auv_vals_short] = plot_full_auv_human(true,false, int_mthd1, short_file_path, ...
-    user_files_path, gpml_location, scenarios_file_path,plot_human);
+    gpml_location, scenarios_file_path,plot_human);
 else
   grid on
   figure()
   map = [lines(7); [0 0 0]; [0.5 0.5 0.5]; [1,1,0]; [1, 0, 1]];
   set(gcf,'defaultAxesColorOrder',map)
 end
-[human_avg_g,human_vals_g] = plot_full_auv_human(false, false, int_mthd1, auv_files_path, ...
+[human_avg_g,human_vals_g] = plot_full_auv_human(false, false, int_mthd1, ...
   user_files_path, gpml_location, scenarios_file_path,plot_human);
 
 if (plot_human == false)

@@ -1,4 +1,6 @@
-% function [all_avg, val_arr] = plot_full_auv_human(auv, plot_on, interpolation_method, auv_files_path, user_files_path, gpml_location, scenarios_file_path)
+% function [all_avg, val_arr] = plot_full_auv_human(auv, plot_on, ...
+% interpolation_method, files_path, ...
+% gpml_location, scenarios_file_path)
 %
 % if auv is true, plots the auv RMSE values for each field, otherwise plots
 % all the human values for each field, and the average human values for each
@@ -9,14 +11,14 @@
 % Institution: USC
 % Date: August 2017
 %
-function [all_avg, val_arr] = plot_full_auv_human(auv, plot_on, interpolation_method, auv_files_path, ...
-  user_files_path, gpml_location, scenarios_file_path, user_plot_on)
+function [all_avg, val_arr] = plot_full_auv_human(auv, plot_on, interpolation_method, files_path, ...
+  gpml_location, scenarios_file_path, user_plot_on)
 
 if auv == true %looping through AUV paths
   %set the average values to the output of the RMSE scatter auv
   %function
-  [val_arr, r_avg, g_avg] = RMSE_scatter_auv(auv_files_path, ...
-    interpolation_method, scenarios_file_path, gpml_location);
+  [val_arr, r_avg, g_avg] = RMSE_scatter( ...
+    interpolation_method, files_path, scenarios_file_path, gpml_location);
   
   %compute the average AUV RMSE
   all_avg = (r_avg + g_avg)/2;
@@ -37,13 +39,12 @@ if auv == true %looping through AUV paths
   end
 else
   %set the default file path
-  if ~exist('user_files_path','var')
-    user_files_path = '/home/sara/human_auv_pp_userfiles';
-    %user_files_path = '/home/resl/human_auv_pp_userfiles';
+  if ~exist('files_path','var')
+    files_path = '/home/sara/human_auv_pp_userfiles';
   end
   
   %create an array of each folder in the directory
-  files = dir (user_files_path);
+  files = dir (files_path);
   
   %initialize zero arrays so the sum of the RMSEs for each plot and the
   %average RMSE for each person can be calculated in the for loop
@@ -58,17 +59,18 @@ else
   %initialize variables for the highest RMSE value and loop index
   max_val = 0; user_index = 1;
   
-%   %create an array of spaces to hold the names of each person
-%   name_arr = repmat(' ', [1 length(files)-2]);
-  
+  run check_paths_trailing_slash
+
   %use the RMSE values for each user to plot all the RMSE values and
   %calculate the average RMSE value for each plot
   for file = files'
     %check that the file is a directory and not a hidden directory
     if file.isdir == true && ~strcmpi(file.name,'.') && ~strcmpi(file.name,'..')
       %see RMSE_scatter function below
-      [RMSE,r_avg,g_avg] = RMSE_scatter(file.name, interpolation_method, ...
-        user_files_path, scenarios_file_path, gpml_location);
+      username = file.name;
+      user_path = [files_path username '/' username]
+      [RMSE,r_avg,g_avg] = RMSE_scatter(interpolation_method, ...
+        user_path, scenarios_file_path, gpml_location);
       
       %get the highest RMSE value in all the plots so that the y axis
       %bounds are correct
@@ -79,23 +81,6 @@ else
       if user_plot_on == true
         scatter(x,RMSE,70,marker,'filled');
         hold on
-%         if strcmp(marker, 'o') == 1
-%           marker = '^';
-%         elseif strcmp(marker, '^') == 1
-%           marker = '>';
-%         elseif strcmp(marker, '>') == 1
-%           marker = '<';
-%         elseif strcmp(marker, '<') == 1
-%           marker = 'v';
-%         elseif strcmp(marker, 'v') == 1
-%           marker = 's';
-%         elseif strcmp(marker, 's') == 1
-%           marker = 'd';
-%         elseif strcmp(marker, 'd') == 1
-%           marker = 'p';
-%         elseif strcmp(marker, 'p') == 1
-%           marker = 'h';
-%         end
         val_arr(user_index,1) = r_avg;
         val_arr(user_index,2) = g_avg;
       else
@@ -136,7 +121,6 @@ else
   
   %add a header with names to the average array
   user_avg = [name_arr; num2cell(user_avg)];
-  
-  
 end
+
 end

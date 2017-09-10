@@ -1,12 +1,14 @@
-% function [RMSE] = plot_gaussian (field_file, user_file, auv, plot_on, interpolation_method)
+% function [RMSE] = calc_RMSE (field_file, user_file, plot_on, ...
+%   interpolation_method, gpml_location)
 % uses data from the user file to interpolate a full field, then finds the
 % RMSE of the two sets of data values
 %
-% Author: Sara Kangaslahti
+% Author: Sara Kangaslahti, Stephanie Kemna
 % Institution: USC
-% Date: August 2017
+% Date: August 2017 - September 2017
 %
-function [RMSE] = calc_RMSE (field_file, user_file, auv, plot_on, interpolation_method, gpml_location)
+function [RMSE] = calc_RMSE (field_file, user_file, plot_on, ...
+  interpolation_method, gpml_location)
 
 %set the name that the variables will be saved under
 [pathstr,name,~] = fileparts(user_file);
@@ -41,8 +43,8 @@ if exist(full_path, 'file') ~= 2
     x = [user_x,user_y];
     y = user_c;
     xs = [field_x,field_y];
-    meanfunc = [];                    % empty: don't use a mean function
-    covfunc = @covSEiso;              % Squared Exponental covariance function
+    meanfunc = [];           % empty: don't use a mean function
+    covfunc = @covSEiso;     % Squared Exponental covariance function
     likfunc = @likGauss;
     
     %calculate the hyperparams
