@@ -5,6 +5,8 @@ function [] = run_auv_sim(wpt_selection_method, inf_metric, plot_figs)
 % make sure we keep all precision
 format long;
 
+debug_plot = 0;
+
 %% read function arguments
 if ( exist('wpt_selection_method','var') == 0 ) 
   wpt_selection_method = 'gp';
@@ -22,8 +24,8 @@ if ( strcmp(wpt_selection_method,'gp') == 1 )
 end
 
 %% user params
-prepath = '/home/stephanie/data_happ/';
-% prepath = '/mnt/hdd/happ/';
+% prepath = '/home/stephanie/data_happ/';
+prepath = '/mnt/hdd/happ/';
 
 % specify all paths
 scenarios_location = strcat(prepath,'scenarios/');
@@ -211,14 +213,14 @@ for field_id = 1:12,
             if ( path_counter == 1 )
               store_points(path_counter,:) = rev_pt_full;
               path_counter = path_counter+1;
-              if ( plot_figs )
+              if ( plot_figs && debug_plot )
                 scatter(rev_pt(1), rev_pt(2), 50, '*', 'LineWidth', 2)            
               end
             else
               if ( ~ismember(rev_pt_full, store_points, 'rows') )
                 store_points(path_counter,:) = rev_pt_full;
                 path_counter = path_counter+1;
-                if ( plot_figs )
+                if ( plot_figs && debug_plot )
                   scatter(rev_pt(1), rev_pt(2), 50, '*', 'LineWidth', 2)
                 end
               end
@@ -258,14 +260,14 @@ for field_id = 1:12,
               if ( path_counter == 1 )
                 store_points(path_counter,:) = rev_pt_full;
                 path_counter = path_counter+1;
-                if ( plot_figs )
+                if ( plot_figs && debug_plot )
                   scatter(rev_pt(1), rev_pt(2), 50, 'x', 'LineWidth', 2)
                 end
               else
                 if ( ~ismember(rev_pt_full, store_points, 'rows') )
                   store_points(path_counter,:) = rev_pt_full;
                   path_counter = path_counter+1;
-                  if ( plot_figs )
+                  if ( plot_figs && debug_plot )
                     scatter(rev_pt(1), rev_pt(2), 50, 'x', 'LineWidth', 2)
                   end
                 end
@@ -288,13 +290,13 @@ for field_id = 1:12,
               
               if ( path_counter == 1 )
                 store_points(path_counter,:) = rev_pt_full;
-                if ( plot_figs ) 
+                if ( plot_figs && debug_plot ) 
                   scatter(reveal_pt_x, reveal_pt_y, 50, 'o', 'LineWidth', 2);
                 end
               else
                 if ( ~ismember(rev_pt_full, store_points, 'rows') )
                   store_points(path_counter,:) = rev_pt_full;
-                  if ( plot_figs )
+                  if ( plot_figs && debug_plot )
                     scatter(reveal_pt_x, reveal_pt_y, 50, 'o', 'LineWidth', 2);
                   end
                 end
@@ -315,13 +317,13 @@ for field_id = 1:12,
     % show the chosen waypoints and path between them
     scatter(wpts_x, wpts_y, 30);
     for idx = 1:length(wpts_x)-1,
-      line(wpts_x(idx:idx+1),wpts_y(idx:idx+1),'Color','k')
+      line(wpts_x(idx:idx+1), wpts_y(idx:idx+1), 'Color', 'k', 'LineWidth', 2)
     end
     xlim([min(field_lon) max(field_lon)])
     ylim([min(field_lat) max(field_lat)])
 
     % show the stored points
-    scatter(store_points(:,1), store_points(:,2), 100, 'o')  
+    scatter(store_points(:,1), store_points(:,2), 75, 'o', 'filled')  
   end
   
   %% store the revealed points
@@ -340,6 +342,17 @@ for field_id = 1:12,
   
   % write data
   dlmwrite(filenm,store_points,'delimiter',',','precision',20,'-append');
+  
+  %% store the figures
+  if ( plot_figs )
+    set(gcf,'PaperUnits','points','PaperPosition',[0 0 1000 700])
+    if ( strcmp(wpt_selection_method,'gp') == 1 )    
+      filenm = [prepath 'auv_' wpt_selection_method '_' inf_metric '/field_' num2str(field_id) '.jpg'];
+    else
+      filenm = [prepath 'auv_' wpt_selection_method '/field_' num2str(field_id) '.jpg'];
+    end 
+    print('-djpeg', '-r90', filenm);
+  end
 end
 
 end
