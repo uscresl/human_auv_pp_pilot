@@ -14,5 +14,10 @@ function [lon_lat_data_pt] = revealPoint(all_data, lon_query, lat_query, min_lon
   
   % grab the corresponding data point, and return
   find_index = (grid_width * (lat_idx-1)) + lon_idx;
-  lon_lat_data_pt = all_data(find_index,:);
+  if ( find_index < 861 ) 
+    lon_lat_data_pt = all_data(find_index,:);
+  else
+    % not sure why it would get here? grab last
+    lon_lat_data_pt = all_data(size(all_data,1), :);
+  end
 end
