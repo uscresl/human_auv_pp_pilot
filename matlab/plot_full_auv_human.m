@@ -14,6 +14,12 @@
 function [all_avg, val_arr] = plot_full_auv_human(auv, plot_on, interpolation_method, files_path, ...
   gpml_location, scenarios_file_path, user_plot_on)
 
+if ( user_plot_on )
+  map = [lines(7); [0 0 0]; [0.5 0.5 0.5]; [1,1,0]; [1, 0, 1]];
+  set(gcf,'defaultAxesColorOrder',map)
+  figure('Position',[200,200,900,650])
+end
+  
 if auv == true %looping through AUV paths
   %set the average values to the output of the RMSE scatter auv
   %function
@@ -35,6 +41,7 @@ if auv == true %looping through AUV paths
     scatter(x,val_arr,50,'filled');
     title('AUV RMSEs')
     ylim([0,0.12])
+    grid on
     %ylim([0,max(avg_arr)+.01])
   end
 else
@@ -105,8 +112,8 @@ else
     ylabel('RMSE')
     legend (name_arr)
     ylim([0,0.14])
+    grid on
     hold off
-    drawnow
   end
   if plot_on == true
     %plot the boxplot with each person's RMSE values
@@ -114,6 +121,7 @@ else
     boxplot(val_arr)
     title('All RMSEs')
     ylim([0,0.14])
+    grid on
   end
   
   %calculate the average for all human users
