@@ -37,10 +37,10 @@ x_vals = linspace (1,12,12);
 scatter_size = 75;
 % color in RGB
 b1color = [0 0 0.8]; % blue
-b2color = [0 0.8 0]; % green
-auv1color = [0.8 0 0.8]; % magenta
-auv2color = [0 0 0]; % black
-auv3color = [0.5 0.5 0.5]; % grey
+b2color = [0.5 0.5 0.5]; % grey
+auv1color = [0 0.8 0]; % green
+auv2color = [0.8 0 0.8]; % magenta
+auv3color = [0 0 0]; % black
 
 % remove boxplot labels to not mess with axes
 for idl = 1:length(x_vals),
