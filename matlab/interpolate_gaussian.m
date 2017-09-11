@@ -131,8 +131,10 @@ pause(1)
 xlabel('Plot Number')
 ylabel('RMSE')
 ylim (y_limits)
-
+grid on;
 finish_font;
+pause(1)
+moveLabel(30)
 
 %create a struct of all the averages for output
 all_averages.human_gp = human_avg_g;
