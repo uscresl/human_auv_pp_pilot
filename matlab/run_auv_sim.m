@@ -1,5 +1,11 @@
+% function [] = run_auv_sim(wpt_selection_method, inf_metric, plot_figs)
+%
 % script for running AUV simulations
-
+%
+% Author: Stephanie Kemna
+% Institution: USC
+% Date: September 2017
+%
 function [] = run_auv_sim(wpt_selection_method, inf_metric, plot_figs)
 
 % make sure we keep all precision

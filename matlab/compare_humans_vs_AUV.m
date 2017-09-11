@@ -1,17 +1,17 @@
-% function [avg_arr] = interpolate_gaussian (plots, user_files_path,...
+% function [avg_arr] = compare_humans_vs_AUV(plots, user_files_path,...
 %   gpml_location, scenarios_file_path, ...
-%   auv_files_path1, auv_files_path2, auv_files_path3)
+%   auv_files_path1, auv_files_path2, auv_files_path3, auv_labels)
 %
 % if plots is 'all', plots a figure with boxplots of the v4 and gp RMSEs
 % for the human trials, and a figure with scatterplots of the v4 and gp
 % RMSEs for the given auv trial; otherwise plots the human(boxplot) and 
 % AUV(scatter) gp RMSEs in the same figure
 %
-% Author: Sara Kangaslahti
+% Author: Sara Kangaslahti, Stephanie Kemna
 % Institution: USC
-% Date: August 2017
+% Date: August - September 2017
 %
-function [all_averages] = interpolate_gaussian (plots, user_files_path,...
+function [all_averages] = compare_humans_vs_AUV(plots, user_files_path,...
   gpml_location, scenarios_file_path, ...
   auv_files_path1, auv_files_path2, auv_files_path3, auv_labels)
 

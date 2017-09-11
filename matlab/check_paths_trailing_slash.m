@@ -1,3 +1,10 @@
+% this is a helper script to make sure paths end with a slash
+%
+% Stephanie Kemna
+% University of Southern California
+% August 2017
+%
+
 % check all paths to make sure they end with '/'
 
 % append '/' to paths if necessary

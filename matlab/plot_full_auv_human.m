@@ -7,9 +7,9 @@
 % field. returns the average RMSE for all the fields and the array of
 % average RMSE values (separated by field)
 %
-% Author: Sara Kangaslahti
+% Author: Sara Kangaslahti, Stephanie Kemna
 % Institution: USC
-% Date: August 2017
+% Date: August - September 2017
 %
 function [all_avg, avg_human_per_fieldtype, all_rmse] = plot_full_auv_human(auv, plot_on, ...
   interpolation_method, files_path, ...
