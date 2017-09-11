@@ -1,6 +1,6 @@
-% function [all_avg, val_arr] = plot_full_auv_human(auv, plot_on, ...
+% function [all_avg, avg_human_per_fieldtype, all_rmse] = plot_full_auv_human(auv, plot_on, ...
 %   interpolation_method, files_path, ...
-%   gpml_location, scenarios_file_path)
+%   gpml_location, scenarios_file_path, user_plot_on)
 %
 % if auv is true, plots the auv RMSE values for each field, otherwise plots
 % all the human values for each field, and the average human values for each
@@ -20,6 +20,10 @@ nr_fields = 12;
 marker = 'o';
 % make the x axis for the scatterplot
 x = linspace (1,12,12);
+
+if ( ~exist('user_plot_on','var') )
+  user_plot_on = 0;
+end
 
 % initialize because return type
 avg_human_per_fieldtype = [];
