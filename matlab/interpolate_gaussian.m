@@ -31,9 +31,9 @@ end
 figure('Position',[0 0 1800 900])
 hold on
 individual_plots = false;
+
 % plot config
 x_vals = linspace (1,12,12);
-y_limits = [0 0.2];
 scatter_size = 75;
 % color in RGB
 b1color = [0 0 0.8]; % blue
@@ -54,11 +54,10 @@ if strcmp(plots, 'all') == 1
     auv_files_path1, gpml_location, scenarios_file_path);
   [auv_avg_v4_2, ~, auv_all_rmse_v4_2] = plot_full_auv_human(true, ...
     individual_plots, int_mthd2, ...
-    auv_files_path1, gpml_location, scenarios_file_path);
+    auv_files_path2, gpml_location, scenarios_file_path);
   [auv_avg_v4_3, ~, auv_all_rmse_v4_3] = plot_full_auv_human(true, ...
     individual_plots, int_mthd2, ...
-    auv_files_path1, gpml_location, scenarios_file_path);  
-  
+    auv_files_path3, gpml_location, scenarios_file_path);
   
   [human_avg_v4, ~, human_all_rmse_v4] = plot_full_auv_human(false, ...
     individual_plots, int_mthd2, ...
@@ -88,7 +87,28 @@ bp1 = boxplot(human_all_rmse1, 'symbol', '+-.', 'Color', b1color, ...
   'labels', xlabels_empty);
 set(bp1, 'LineWidth',3,'Color',b1color);
 
+% AUV scatterplots
+sp_auv1 = scatter(x_vals, auv_all_rmse1, scatter_size, auv1color, '^', 'LineWidth', 3);
+sp_auv2 = scatter(x_vals, auv_all_rmse2, scatter_size, auv2color, '^', 'LineWidth', 3);
+sp_auv3 = scatter(x_vals, auv_all_rmse3, scatter_size, auv3color, '^', 'LineWidth', 3);
+
+if ( strcmp (plots, 'bestv4') == 1 )
+  title('Human vs Best AUV RMSE (v4)')
+else
+  title('Human vs Best AUV RMSE (gp)')
+end
+legend([bp1(3), sp_auv1, sp_auv2 sp_auv3], ...
+  {'Human', auv_labels{1}, auv_labels{2}, auv_labels{3}}, ...
+  'Location', 'NorthEastOutside');
+run finish_figure
+pause(1)
+hold off
+
 if strcmp(plots, 'all') == 1
+  % figure with alternate interp method, for 'all' the alternate is v4
+  figure('Position',[0 0 1800 900])
+  hold on
+
   % plot the human v4 data
   bp2 = boxplot(human_all_rmse_v4, 'symbol', '+--', 'Color', b2color, ...
     'labels', xlabels_empty);
@@ -96,53 +116,57 @@ if strcmp(plots, 'all') == 1
   % plot the AUV v4 data as well
   sp_v4_1 = scatter(x_vals, auv_all_rmse_v4_1, scatter_size, auv1color, 'filled');
   sp_v4_2 = scatter(x_vals, auv_all_rmse_v4_2, scatter_size, auv2color, 'filled');
+  sp_v4_3 = scatter(x_vals, auv_all_rmse_v4_3, scatter_size, auv3color, 'filled');  
+
+  title('Human vs Best AUV RMSE (v4)')
+  legend([bp2(3), sp_v4_1, sp_v4_2 sp_v4_3], ...
+    {'Human', auv_labels{1}, auv_labels{2}, auv_labels{3}}, ...
+    'Location', 'NorthEastOutside');
+  run finish_figure
+  pause(1)
+  hold off
+  
+  
+  % figure with EVERYTHING
+  figure('Position',[0 0 1800 900])
+  hold on
+
+  % plot the boxplot with human gp data
+  bp1 = boxplot(human_all_rmse1, 'symbol', '+-.', 'Color', b1color, ...
+    'labels', xlabels_empty);
+  set(bp1, 'LineWidth',3,'Color',b1color);
+  % plot the human v4 data
+  bp2 = boxplot(human_all_rmse_v4, 'symbol', '+--', 'Color', b2color, ...
+    'labels', xlabels_empty);
+  set(bp2,'LineWidth',3,'Color',b2color);
+  % plot the AUV gp data
+  sp_auv1 = scatter(x_vals, auv_all_rmse1, scatter_size, auv1color, '^', 'LineWidth', 3);
+  sp_auv2 = scatter(x_vals, auv_all_rmse2, scatter_size, auv2color, '^', 'LineWidth', 3);
+  sp_auv3 = scatter(x_vals, auv_all_rmse3, scatter_size, auv3color, '^', 'LineWidth', 3);
+  % plot the AUV v4
+  sp_v4_1 = scatter(x_vals, auv_all_rmse_v4_1, scatter_size, auv1color, 'filled');
+  sp_v4_2 = scatter(x_vals, auv_all_rmse_v4_2, scatter_size, auv2color, 'filled');
   sp_v4_3 = scatter(x_vals, auv_all_rmse_v4_3, scatter_size, auv3color, 'filled');
-end
 
-% plot the second scatterplot
-sp_auv1 = scatter(x_vals, auv_all_rmse1, scatter_size, auv1color, '^', 'LineWidth', 2);
-sp_auv2 = scatter(x_vals, auv_all_rmse2, scatter_size, auv2color, '^', 'LineWidth', 2);
-sp_auv3 = scatter(x_vals, auv_all_rmse3, scatter_size, auv3color, '^', 'LineWidth', 2);
-
-if ( strcmp(plots, 'all') == 0 )
-  if ( strcmp (plots, 'bestv4') == 1 )
-    title('Human vs Best AUV RMSE (v4)')
-  else
-    title('Human vs Best AUV RMSE (gp)')
-  end
-  legend([bp1(3), sp_auv1, sp_auv2 sp_auv3], ...
-    {'Human', auv_labels{1}, auv_labels{2}, auv_labels{3}});
-else
   % all AUV results
   title('Human vs. all AUV performance for both interpolation methods')
-  legend('AUV v4','AUV 1', 'AUV 2', 'AUV 3')
   %      hum gp   hum v4  auv v4            auv gp
-  legend([bp1(3), bp2(3), sp_v4_1, sp_v4_2, sp_v4_3, sp_auv1, sp_auv2 sp_auv3], ...
+  legend([bp1(3), bp2(3), sp_auv1, sp_auv2, sp_auv3, sp_v4_1, sp_v4_2, sp_v4_3, ], ...
     {'Human GP', 'Human V4', ...
-    [auv_labels{1} ' ' int_mthd2], [auv_labels{2} ' ' int_mthd2], [auv_labels{3} ' ' int_mthd2], ...
-    [auv_labels{1} ' ' int_mthd1], [auv_labels{2} ' ' int_mthd1], [auv_labels{3} ' ' int_mthd1]}, ...
-    'Location', 'NorthEastOutside');
+     [auv_labels{1} ' ' int_mthd1], [auv_labels{2} ' ' int_mthd1], [auv_labels{3} ' ' int_mthd1], ...
+     [auv_labels{1} ' ' int_mthd2], [auv_labels{2} ' ' int_mthd2], [auv_labels{3} ' ' int_mthd2]}, ...
+    'Location', 'NorthEastOutside');  
+
+  run finish_figure
+  pause(1)
+  hold off
 end
 
-% finish figure
-xlim([0 13])
-set(gca,'XTick',linspace(1,12,12))
-set(gca,'XTickLabel',linspace(1,12,12))
-pause(1)
-xlabel('Plot Number')
-ylabel('RMSE')
-ylim (y_limits)
-grid on;
-finish_font;
-pause(1)
-moveLabel(30)
-
-%create a struct of all the averages for output
+% create a struct of all the averages for output
 all_averages.human_gp = human_avg_g;
 all_averages.auv_gp1 = auv_avg1;
 all_averages.auv_gp2 = auv_avg2;
-all_averages.auv_gp2 = auv_avg3;
-
+all_averages.auv_gp3 = auv_avg3;
 if strcmp(plots,'all') == 1
   all_averages.human_v4 = human_avg_v4;
   all_averages.auv_v41 = auv_avg_v4_1;

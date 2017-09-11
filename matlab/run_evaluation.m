@@ -1,5 +1,8 @@
 % file with all parameters for running evaluation
 
+% all figures white background
+set(0,'defaultfigurecolor',[1 1 1])
+
 % use the prepath if you put all data files and matlab lib into one dir
 % prepath = '/home/stephanie/data_happ/';
 prepath = '/mnt/hdd/happ/';
