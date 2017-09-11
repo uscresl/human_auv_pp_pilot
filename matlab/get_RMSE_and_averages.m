@@ -1,4 +1,4 @@
-% function [user_rmse, rand_avg, gaus_avg] = function [user_rmse, rand_avg, gaus_avg] = RMSE_scatter(...
+% function [user_rmse, avg_fields_rand_gp, avg_fields_gmm] = get_RMSE_and_averages(...
 %   interpolation_method, files_path, scenarios_file_path, gpml_location)
 % 
 % calculates the RMSE for each plot inside of a user's folder and returns
@@ -9,11 +9,11 @@
 % Institution: USC
 % Date: August 2017
 %
-function [user_rmse, rand_avg, gaus_avg] = RMSE_scatter(...
+function [user_rmse, avg_fields_rand_gp, avg_fields_gmm] = get_RMSE_and_averages(...
   interpolation_method, files_path, scenarios_file_path, gpml_location)
 
 % initialize variables
-sum_rand = 0; sum_gaus = 0;
+sum_rand_gp = 0; sum_gmm = 0;
 % create a zero array to hold the user's RMSE values
 user_rmse = zeros (1,12);
 
@@ -53,15 +53,17 @@ for field_nr = 1:12
   user_rmse(field_nr) = calc_RMSE(field_file, user_file, false, ...
     interpolation_method, gpml_location);
   
-  %add the RMSEs of the first six plots (random fields) and the second
-  %six plots (gaussian fields) separately
+  % add the RMSEs of the first six plots (fields random draw from GP)
+  % and the second six plots (GMM fields) separately
   if field_nr < 7
-    sum_rand = sum_rand + user_rmse(field_nr);
+    sum_rand_gp = sum_rand_gp + user_rmse(field_nr);
   else
-    sum_gaus = sum_gaus + user_rmse(field_nr);
+    sum_gmm = sum_gmm + user_rmse(field_nr);
   end
 end
-%calculate the averages
-rand_avg = sum_rand/6;
-gaus_avg = sum_gaus/6;
+
+% calculate the averages
+avg_fields_rand_gp = sum_rand_gp/6;
+avg_fields_gmm = sum_gmm/6;
+
 end
