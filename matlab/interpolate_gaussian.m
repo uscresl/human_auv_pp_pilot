@@ -13,7 +13,7 @@
 %
 function [all_averages] = interpolate_gaussian (plots, user_files_path,...
   gpml_location, scenarios_file_path, ...
-  auv_files_path1, auv_files_path2, auv_files_path3)
+  auv_files_path1, auv_files_path2, auv_files_path3, auv_labels)
 
 if ( ~exist('auv_files_path1','var') )
   error('Need a path for AUV files');
@@ -28,7 +28,7 @@ if strcmp(plots, 'bestv4') == 1
 end
 
 % one figure for all results
-figure('Position',[0 0 1200 700])
+figure('Position',[0 0 1800 900])
 hold on
 individual_plots = false;
 % plot config
@@ -110,16 +110,17 @@ if ( strcmp(plots, 'all') == 0 )
   else
     title('Human vs Best AUV RMSE (gp)')
   end
-  legend([bp1(3), sp_auv1, sp_auv2 sp_auv3], {'Human', 'AUV 1', 'AUV 2', 'AUV 3'});
+  legend([bp1(3), sp_auv1, sp_auv2 sp_auv3], ...
+    {'Human', auv_labels{1}, auv_labels{2}, auv_labels{3}});
 else
   % all AUV results
-  title('AUV RMSE')
+  title('Human vs. all AUV performance for both interpolation methods')
   legend('AUV v4','AUV 1', 'AUV 2', 'AUV 3')
   %      hum gp   hum v4  auv v4            auv gp
   legend([bp1(3), bp2(3), sp_v4_1, sp_v4_2, sp_v4_3, sp_auv1, sp_auv2 sp_auv3], ...
     {'Human GP', 'Human V4', ...
-    ['AUV1 ' int_mthd2], ['AUV2 ' int_mthd2], ['AUV3 ' int_mthd2], ...
-    ['AUV1 ' int_mthd1], ['AUV2 ' int_mthd1], ['AUV3 ' int_mthd1]}, ...
+    [auv_labels{1} ' ' int_mthd2], [auv_labels{2} ' ' int_mthd2], [auv_labels{3} ' ' int_mthd2], ...
+    [auv_labels{1} ' ' int_mthd1], [auv_labels{2} ' ' int_mthd1], [auv_labels{3} ' ' int_mthd1]}, ...
     'Location', 'NorthEastOutside');
 end
 
