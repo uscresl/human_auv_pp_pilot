@@ -93,9 +93,9 @@ sp_auv2 = scatter(x_vals, auv_all_rmse2, scatter_size, auv2color, '^', 'LineWidt
 sp_auv3 = scatter(x_vals, auv_all_rmse3, scatter_size, auv3color, '^', 'LineWidth', 3);
 
 if ( strcmp (plots, 'bestv4') == 1 )
-  title('Human vs Best AUV RMSE (v4)')
+  title('Human vs robot RMSE (V4)')
 else
-  title('Human vs Best AUV RMSE (gp)')
+  title('Human vs robot RMSE (GP)')
 end
 legend([bp1(3), sp_auv1, sp_auv2 sp_auv3], ...
   {'Human', auv_labels{1}, auv_labels{2}, auv_labels{3}}, ...
@@ -118,7 +118,7 @@ if strcmp(plots, 'all') == 1
   sp_v4_2 = scatter(x_vals, auv_all_rmse_v4_2, scatter_size, auv2color, 'filled');
   sp_v4_3 = scatter(x_vals, auv_all_rmse_v4_3, scatter_size, auv3color, 'filled');  
 
-  title('Human vs Best AUV RMSE (v4)')
+  title('Human vs robot RMSE (V4)')
   legend([bp2(3), sp_v4_1, sp_v4_2 sp_v4_3], ...
     {'Human', auv_labels{1}, auv_labels{2}, auv_labels{3}}, ...
     'Location', 'NorthEastOutside');
@@ -149,12 +149,12 @@ if strcmp(plots, 'all') == 1
   sp_v4_3 = scatter(x_vals, auv_all_rmse_v4_3, scatter_size, auv3color, 'filled');
 
   % all AUV results
-  title('Human vs. all AUV performance for both interpolation methods')
+  title('Human vs. all robot performance for both interpolation methods')
   %      hum gp   hum v4  auv v4            auv gp
   legend([bp1(3), bp2(3), sp_auv1, sp_auv2, sp_auv3, sp_v4_1, sp_v4_2, sp_v4_3, ], ...
-    {'Human GP', 'Human V4', ...
-     [auv_labels{1} ' ' int_mthd1], [auv_labels{2} ' ' int_mthd1], [auv_labels{3} ' ' int_mthd1], ...
-     [auv_labels{1} ' ' int_mthd2], [auv_labels{2} ' ' int_mthd2], [auv_labels{3} ' ' int_mthd2]}, ...
+    {'Human - GP', 'Human - V4', ...
+     [auv_labels{1} ' - ' upper(int_mthd1)], [auv_labels{2} ' - ' upper(int_mthd1)], [auv_labels{3} ' - ' upper(int_mthd1)], ...
+     [auv_labels{1} ' - ' upper(int_mthd2)], [auv_labels{2} ' - ' upper(int_mthd2)], [auv_labels{3} ' - ' upper(int_mthd2)]}, ...
     'Location', 'NorthEastOutside');  
 
   run finish_figure

@@ -123,7 +123,7 @@ else
   
   if user_plot_on == true
     title (['User RMSEs (', interpolation_method, ')'])
-    xlabel('Plot Number')
+    xlabel('Field Number')
     ylabel('RMSE')
     legend (name_arr, 'Location','EastOutside')
     ylim([0,0.14])

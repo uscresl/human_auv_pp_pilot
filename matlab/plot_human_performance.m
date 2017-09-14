@@ -46,7 +46,7 @@ if strcmp(plots, 'all') == 1
   hold on
   bp2 = boxplot(all_rmse_V4, 'symbol', '+--', 'Color', b2color);
   set(bp2, 'LineWidth', 3, 'Color', b2color);
-  legend([bp1(3), bp2(3)], {'Human GP', 'Human v4'});
+  legend([bp1(3), bp2(3)], {'Human GP', 'Human V4'});
 else
   legend([bp1(3)], {'Human GP'});
 end

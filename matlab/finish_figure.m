@@ -8,7 +8,7 @@ xlim([0 13])
 set(gca,'XTick',linspace(1,12,12))
 set(gca,'XTickLabel',linspace(1,12,12))
 pause(1)
-xlabel('Plot Number')
+xlabel('Field Number')
 ylabel('RMSE')
 ylim ([0 0.2])
 grid on;
